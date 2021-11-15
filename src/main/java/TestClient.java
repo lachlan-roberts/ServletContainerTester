@@ -1,28 +1,25 @@
 import java.nio.ByteBuffer;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.util.component.LifeCycle;
 
 public class TestClient implements Runnable
 {
     private final HttpClient client = new HttpClient();
-    private final int numContent;
+    private final int maxContent;
 
     public TestClient()
     {
-        this.numContent = -1;
+        this(-1);
     }
 
-    public TestClient(int numContent)
+    public TestClient(int maxContent)
     {
-        this.numContent = numContent;
-    }
-
-    public void stop() throws Exception
-    {
-        client.stop();
+        this.maxContent = maxContent;
     }
 
     @Override
@@ -30,26 +27,35 @@ public class TestClient implements Runnable
     {
         try
         {
-            System.err.println("Testing from Jetty Client...");
-            client.start();
-            ContentResponse response = client.newRequest("http://localhost:8080").onResponseContent(new Response.ContentListener()
+            CountDownLatch complete = new CountDownLatch(1);
+            Response.Listener.Adapter adapter = new Response.Listener.Adapter()
             {
-                private int numReceived = 0;
+                private final AtomicInteger numReceived = new AtomicInteger();
 
                 @Override
-                public void onContent(Response response, ByteBuffer byteBuffer)
+                public void onContent(Response response, ByteBuffer content)
                 {
-                    numReceived += byteBuffer.remaining();
-                    if (numContent > 0 && numReceived > numContent)
-                        response.abort(new Throwable("Test is aborting."));
+                    int numRcv = numReceived.addAndGet(content.remaining());
+                    if (maxContent > 0 && numRcv > maxContent)
+                        response.abort(new Throwable("Intentional Abort"));
                 }
-            }).send();
 
-            System.err.println(response);
+                @Override
+                public void onComplete(Result result)
+                {
+                    System.err.println("Testing Client Complete " + result.getResponse());
+                    complete.countDown();
+                }
+            };
+
+            client.start();
+            client.newRequest("http://localhost:8080").send(adapter);
+            complete.await();
         }
         catch (Throwable t)
         {
-            System.err.println("Testing Client Failed " + t.toString());
+            System.err.println("Testing Client Failed " + t);
+            t.printStackTrace();
         }
         finally
         {

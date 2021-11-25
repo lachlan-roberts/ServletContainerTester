@@ -11,10 +11,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import servlet.JettyContainer;
 import servlet.ServletContainer;
-import servlet.TomcatContainer;
-import servlet.UndertowContainer;
+import servlet.impl.JettyContainer;
+import servlet.impl.TomcatContainer;
+import servlet.impl.UndertowContainer;
 
 public class ContainerTester
 {

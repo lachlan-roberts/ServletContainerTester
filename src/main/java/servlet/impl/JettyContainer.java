@@ -1,10 +1,11 @@
-package servlet;
+package servlet.impl;
 
 import javax.servlet.Servlet;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import servlet.ServletContainer;
 
 public class JettyContainer implements ServletContainer
 {

@@ -1,4 +1,4 @@
-package servlet;
+package servlet.impl;
 
 import javax.servlet.Servlet;
 
@@ -8,6 +8,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
+import servlet.ServletContainer;
 
 import static io.undertow.servlet.Servlets.defaultContainer;
 import static io.undertow.servlet.Servlets.deployment;
